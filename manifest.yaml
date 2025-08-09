@@ -1,0 +1,34 @@
+repository: "gh:HanaOrg/Zaiko"
+platforms:
+  win64: "kbi:zaiko-[[VER]]-win64.kpak"
+  linux64: null
+  linuxArm: null
+  mac64: null
+  macArm: null
+name: "Zaiko"
+slogan: "Inventory made easy"
+desc: |
+  A simple app to manage your inventory.
+
+  - Quickly visualize and edit stock of any item.
+  - Generate barcodes (and export them as images!) for any item.
+  - Turn your inventory into an Excel, CSV, or JSON file.
+
+  All of this from your local machine, with a good looking UI.
+license: "GPLv3"
+author_id: "org.hana"
+homepage: "https://hana.vercel.app/zaiko"
+docs: "https://hana.vercel.app/zaiko"
+sys_requirements:
+  os_ver: win=7
+  ram_mb: 512
+  disk_mb: 30
+categories:
+  - "EFFICIENCY"
+  - "OFFICE"
+age_rating:
+  money: false
+  social: false
+  substances: false
+  violence: false
+telemetry: false

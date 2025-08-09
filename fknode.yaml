@@ -1,0 +1,13 @@
+destroy:
+  intensities:
+    - "*"
+  targets:
+    - "dist/"
+    # - "src-tauri/target/"
+    # - "src-tauri/gen"
+commitActions: false
+flagless:
+  flaglessUpdate: true
+  flaglessDestroy: true
+  flaglessLint: true
+  flaglessPretty: true

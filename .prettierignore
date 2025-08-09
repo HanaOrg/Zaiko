@@ -1,0 +1,4 @@
+src/css/**
+src-tauri/target/**
+src-tauri/gen/**
+src/js/**

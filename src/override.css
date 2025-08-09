@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@plugin './hero.ts';
+/* Note: You may need to change the path to fit your project structure */
+@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@custom-variant dark (&:is(.dark *));
+
+/* override some bootstrap styles */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 0px;
+  background-color: #16348970;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #163489;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1f4fd4;
+}
+
+@media screen and (min-width: 715px) {
+  .small-warn {
+    display: none;
+  }
+}

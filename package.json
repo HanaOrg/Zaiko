@@ -1,0 +1,46 @@
+{
+  "name": "zaiko",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Inventory made easy.",
+  "repository": "https://github.com/HanaOrg/zaiko",
+  "readme": "https://github.com/HanaOrg/zaiko#readme",
+  "private": true,
+  "main": "main.js",
+  "author": "ZakaHaceCosas",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@heroui/react": "^2.8.2",
+    "@tailwindcss/vite": "^4.1.11",
+    "@tauri-apps/api": "^2.7.0",
+    "@tauri-apps/plugin-dialog": "^2.3.2",
+    "@tauri-apps/plugin-fs": "~2.2.1",
+    "@tauri-apps/plugin-opener": "^2.4.0",
+    "@zakahacecosas/number-utils": "npm:@jsr/zakahacecosas__number-utils",
+    "@zakahacecosas/string-utils": "npm:@jsr/zakahacecosas__string-utils",
+    "framer-motion": "^12.23.12",
+    "jsbarcode": "^3.12.1",
+    "json-2-csv": "^5.5.9",
+    "json-as-xlsx": "^2.5.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router": "^7.8.0",
+    "tailwindcss": "^4.1.11"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.7.1",
+    "@types/bun": "^1.2.19",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "prettier": "^3.6.2",
+    "typescript": "~5.6.3",
+    "vite": "^6.3.5"
+  }
+}

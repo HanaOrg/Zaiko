@@ -1,0 +1,86 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Zaiko",
+  "version": "0.1.0",
+  "identifier": "com.hana.zaiko",
+  "build": {
+    "beforeDevCommand": "bun run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "bun run build",
+    "frontendDist": "../dist",
+    "removeUnusedCommands": true
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Zaiko",
+        "width": 1080,
+        "height": 700,
+        "center": true,
+        "decorations": true,
+        "resizable": true,
+        "fullscreen": false,
+        "maximized": false,
+        "visible": true,
+        "devtools": false,
+        "alwaysOnTop": false,
+        "allowLinkPreview": true,
+        "transparent": false,
+        "browserExtensionsEnabled": false,
+        "closable": true,
+        "minimizable": true,
+        "maximizable": true,
+        "focus": true,
+        "shadow": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "windows": {
+      "allowDowngrades": false,
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "signCommand": null,
+      "timestampUrl": null,
+      "tsp": false,
+      "webviewInstallMode": {
+        "silent": true,
+        "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "compression": "lzma",
+        "installMode": "both",
+        "installerIcon": "./icons/icon.ico"
+      }
+    },
+    "category": "Business",
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "copyright": "(c) Hana Org 2025",
+    "homepage": "https://github.com/HanaOrg",
+    "license": "GPL-3.0-only",
+    "publisher": "Hana Org",
+    "shortDescription": "Inventory made easy",
+    "longDescription": "An app that allows for simple inventory stock management. You can update stock for all items from your homepage easily. View stock for all items, and warnings for items running out of stock. Export data to Excel, JSON, or CSV at any time.",
+    "linux": {
+      "appimage": {
+        "bundleMediaFramework": false
+      },
+      "deb": {
+        "priority": "standard",
+        "changelog": "../changelog.txt",
+        "section": "admin"
+      }
+    }
+  }
+}
