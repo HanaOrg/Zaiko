@@ -48,20 +48,19 @@ export function CreateSetModal({
         <ModalBody>
           {error && <Alert color="warning">{error}</Alert>}
           <Form onSubmit={(e) => e.preventDefault()}>
-            <div className="mb-3">
-              <label>Name of your SET</label>
-              <Input
-                id="set_name"
-                type="text"
-                required
-                placeholder="Name of your set here"
-                title="Only letters, numbers, and spaces are allowed."
-                onChange={(e) => setSetName(e.target.value.trim())}
-              />
-              <p className="text-sm text-default-700 mt-2">
-                Only letters and numbers are allowed. Required.
-              </p>
-            </div>
+            <Input
+              label={<label>Name of your SET</label>}
+              isRequired={true}
+              id="set_name"
+              type="text"
+              required
+              placeholder="Name of your set here"
+              title="Only letters, numbers, and spaces are allowed."
+              onChange={(e) => setSetName(e.target.value.trim())}
+            />
+            <p className="text-sm text-default-700">
+              Only letters and numbers are allowed.
+            </p>
           </Form>
         </ModalBody>
         <ModalFooter>
@@ -161,32 +160,30 @@ export function SetStockModal({
         <ModalBody>
           {error && <Alert color="warning">{error}</Alert>}
           <Form onSubmit={(e) => e.preventDefault()}>
-            <div className="mb-3">
-              <NumberInput
-                label={
-                  <label>
-                    Update stock for <code>{item}</code>
-                  </label>
-                }
-                id="stock"
-                placeholder="Amount here"
-                required
-                title="Number must be equal to or greater than zero."
-                onValueChange={(e) => setStock(e)}
-                onKeyDown={async (e) => {
-                  if (e.key === "Enter") await handler();
-                }}
-              />
-              <p className="text-sm text-default-700 mt-2">
-                On SET <code>{set}</code>. Number must be equal to or greater
-                than zero.
-                {whatFor === "overwrite"
-                  ? " Your item's stock will be set to this amount regardless of what it previous was."
-                  : whatFor === "increment"
-                    ? " Your item's stock will be INCREMENTED by this amount - so if you type \"5\" and the previous stock was 15, it'll set to 20."
-                    : " Your item's stock will be DECREMENTED by this amount - so if you type \"5\" and the previous stock was 15, it'll set to 10."}
-              </p>
-            </div>
+            <NumberInput
+              label={
+                <label>
+                  Update stock for <code>{item}</code>
+                </label>
+              }
+              id="stock"
+              placeholder="Amount here"
+              required
+              title="Number must be equal to or greater than zero."
+              onValueChange={(e) => setStock(e)}
+              onKeyDown={async (e) => {
+                if (e.key === "Enter") await handler();
+              }}
+            />
+            <p className="text-sm text-default-700 mt-2">
+              On SET <code>{set}</code>. Number must be equal to or greater than
+              zero.
+              {whatFor === "overwrite"
+                ? " Your item's stock will be set to this amount regardless of what it previous was."
+                : whatFor === "increment"
+                  ? " Your item's stock will be INCREMENTED by this amount - so if you type \"5\" and the previous stock was 15, it'll set to 20."
+                  : " Your item's stock will be DECREMENTED by this amount - so if you type \"5\" and the previous stock was 15, it'll set to 10."}
+            </p>
           </Form>
         </ModalBody>
         <ModalFooter>
@@ -261,41 +258,39 @@ export function DeleteModal({
         <ModalBody>
           {error && <Alert color="warning">{error}</Alert>}
           <Form onSubmit={(e) => e.preventDefault()}>
-            <div className="mb-3">
-              <p className="mb-2">
-                Please, double check you want to{" "}
-                <b>
-                  delete {type.toUpperCase()}{" "}
-                  <code className="bg-yellow-300">{deletable}</code>
-                  {type === "item" ? (
-                    <>
-                      {" "}
-                      from <code>{set}</code>
-                    </>
-                  ) : (
-                    <></>
-                  )}
-                </b>
-                . You cannot undo this.
-                <br />
-                Type the {type.toUpperCase()}'s name below to confirm you want
-                to delete it. Input is case-sensitive.
-              </p>
-              <Input
-                id="id"
-                type="text"
-                placeholder={`Type the ${type.toUpperCase()}'s name to confirm.`}
-                required
-                onChange={(e) => setItemName(e.target.value.trim())}
-                onKeyDown={async (e) => {
-                  if (e.key === "Enter") await handler();
-                }}
-              />
-              <p className="text-sm text-default-700 mt-2">
-                This {type}'s name is <code>{item}</code>. We ask you to write
-                it to prevent a mistaken click from becoming a larger mistake.
-              </p>
-            </div>
+            <p className="mb-2">
+              Please, double check you want to{" "}
+              <b>
+                delete {type.toUpperCase()}{" "}
+                <code className="bg-yellow-300">{deletable}</code>
+                {type === "item" ? (
+                  <>
+                    {" "}
+                    from <code>{set}</code>
+                  </>
+                ) : (
+                  <></>
+                )}
+              </b>
+              . You cannot undo this.
+              <br />
+              Type the {type.toUpperCase()}'s name below to confirm you want to
+              delete it. Input is case-sensitive.
+            </p>
+            <Input
+              id="id"
+              type="text"
+              placeholder={`Type the ${type.toUpperCase()}'s name to confirm.`}
+              required
+              onChange={(e) => setItemName(e.target.value.trim())}
+              onKeyDown={async (e) => {
+                if (e.key === "Enter") await handler();
+              }}
+            />
+            <p className="text-sm text-default-700 mt-2">
+              This {type}'s name is <code>{item}</code>. We ask you to write it
+              to prevent a mistaken click from becoming a larger mistake.
+            </p>
           </Form>
         </ModalBody>
         <ModalFooter>
@@ -355,33 +350,30 @@ export function DeleteSetModal({
         <ModalBody>
           {error && <Alert color="warning">{error}</Alert>}
           <Form onSubmit={(e) => e.preventDefault()}>
-            <div className="mb-3">
-              <label>
-                Please, double check you'd like to{" "}
-                <b>
-                  permanently delete set <code>{set}</code>
-                </b>
-                . You cannot undo this.
-                <br />
-                Type the set's name below to confirm you want to delete it. It
-                must match casing and spacing.
-              </label>
-              <Input
-                id="id"
-                type="text"
-                placeholder="Type the set's name to confirm."
-                required
-                onChange={(e) => setSetName(e.target.value.trim())}
-                onKeyDown={async (e) => {
-                  if (e.key === "Enter") await handler();
-                }}
-              />
-              <p className="text-sm text-default-700 mt-2">
-                This set's name is <code>{set}</code>. We ask you to write it
-                simply to prevent a mistaken click from becoming a larger
-                mistake.
-              </p>
-            </div>
+            <label>
+              Please, double check you'd like to{" "}
+              <b>
+                permanently delete set <code>{set}</code>
+              </b>
+              . You cannot undo this.
+              <br />
+              Type the set's name below to confirm you want to delete it. It
+              must match casing and spacing.
+            </label>
+            <Input
+              id="id"
+              type="text"
+              placeholder="Type the set's name to confirm."
+              required
+              onChange={(e) => setSetName(e.target.value.trim())}
+              onKeyDown={async (e) => {
+                if (e.key === "Enter") await handler();
+              }}
+            />
+            <p className="text-sm text-default-700">
+              This set's name is <code>{set}</code>. We ask you to write it
+              simply to prevent a mistaken click from becoming a larger mistake.
+            </p>
           </Form>
         </ModalBody>
         <ModalFooter>

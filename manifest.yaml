@@ -1,4 +1,5 @@
 repository: "gh:HanaOrg/Zaiko"
+type: "gui"
 platforms:
   win64: "kbi:zaiko-[[VER]]-win64.kpak"
   linux64: null
@@ -7,20 +8,23 @@ platforms:
   macArm: null
 name: "Zaiko"
 slogan: "Inventory made easy"
+icon: "https://hana-org.vercel.app/zaiko/icon.png"
 desc: |
   A simple app to manage your inventory.
 
+  - Takes very little storage.
   - Quickly visualize and edit stock of any item.
+  - See alerts for items running out.
   - Generate barcodes (and export them as images!) for any item.
   - Turn your inventory into an Excel, CSV, or JSON file.
 
   All of this from your local machine, with a good looking UI.
 license: "GPLv3"
-author_id: "org.hana"
-homepage: "https://hana.vercel.app/zaiko"
-docs: "https://hana.vercel.app/zaiko"
-sys_requirements:
-  os_ver: win=7
+author: "org.hana"
+homepage: "https://hana-org.vercel.app/zaiko"
+requirements:
+  os_ver:
+    win: "Windows 7 SP1 or later"
   ram_mb: 512
   disk_mb: 30
 categories:
@@ -32,3 +36,18 @@ age_rating:
   substances: false
   violence: false
 telemetry: false
+images:
+  - text: Home page with some sample data.
+    link: "https://hana-org.vercel.app/zaiko/home.png"
+  - text: Dark mode version.
+    link: "https://hana-org.vercel.app/zaiko/home-dark.png"
+  - text: Create a "SET" (a category wrapping tracked items).
+    link: "https://hana-org.vercel.app/zaiko/new-set.png"
+  - text: Create an ITEM, adding some details to it.
+    link: "https://hana-org.vercel.app/zaiko/new-item.png"
+  - text: Get alerts on items running out.
+    link: "https://hana-org.vercel.app/zaiko/alerts.png"
+  - text: Increment, decrement, or manually set stock data.
+    link: "https://hana-org.vercel.app/zaiko/increment-stock.png"
+  - text: Tweak settings like theme or alert thresholds, or export data.
+    link: "https://hana-org.vercel.app/zaiko/settings.png"

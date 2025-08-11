@@ -28,7 +28,7 @@ export function AboutModal({
             Created and maintained by{" "}
             <Link
               className="text-lg"
-              href="https://zakahacecosas.github.io/"
+              href="https://github.com/zakahacecosas"
               target="_blank"
               rel="noopener noreferrer"
             >
