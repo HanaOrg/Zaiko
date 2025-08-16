@@ -3,11 +3,10 @@ destroy:
     - "*"
   targets:
     - "dist/"
-    # - "src-tauri/target/"
-    # - "src-tauri/gen"
 commitActions: false
 flagless:
   flaglessUpdate: true
   flaglessDestroy: true
   flaglessLint: true
   flaglessPretty: true
+buildCmd: "bun tauri build^powershell cp manifest.yaml dist/manifest.yaml^powershell cp src-tauri/icons/icon.ico dist/zaiko.ico^kbi konpak dist --platform=windows --id=zaiko --binary=zaiko.exe --icon=zaiko.ico --version=0.1.0 --sfx"
