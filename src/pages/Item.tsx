@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Inventory, InventoryItem } from "../types/types";
+import { Inventory, InventoryItem, InventorySet } from "../types/types";
 import { validate } from "@zakahacecosas/string-utils";
 import {
   Form,
@@ -29,7 +29,24 @@ export default function CreateItem() {
   const [itemInternalBarcode, setItemInternalBarcode] =
     useState<boolean>(false);
   const [zaikoBarcode, setZaikoBarcode] = useState<string>("");
+  const [edit, setEdit] = useState<null | {
+    item: InventoryItem;
+    set: InventorySet;
+  }>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const split = window.location.search.replace("?", "").split("&").sort();
+    if (!split.includes("edit=true")) return;
+
+    const res = {
+      item: JSON.parse(decodeURIComponent(split[1]!.split("=")[1]!)),
+      set: JSON.parse(decodeURIComponent(split[2]!.split("=")[1]!)),
+    };
+
+    setItemName(res.item.name);
+    setEdit(res);
+  }, []);
 
   useEffect(() => {
     async function h() {
@@ -57,17 +74,40 @@ export default function CreateItem() {
   }, [itemInternalBarcode]);
 
   async function handleCreateItem() {
-    if (!validate(itemParent) || itemParent === "null") {
-      setError(`Parent SET ${itemParent} is NOT valid.`);
-      return;
-    }
+    if (edit === null) {
+      if (!validate(itemParent) || itemParent === "null") {
+        setError(`Parent SET ${itemParent} is NOT valid.`);
+        return;
+      }
 
-    if (!validate(itemName)) {
-      setError(`Name ${itemName} is NOT valid.`);
-      return;
+      if (!validate(itemName)) {
+        setError(`Name ${itemName} is NOT valid.`);
+        return;
+      }
+
+      if (isNaN(itemInitialStock) || itemInitialStock < 0) {
+        setError(`Stock ${itemInitialStock} is invalid or lower than 0.`);
+        return;
+      }
+
+      if (itemDescription && !validate(itemDescription)) {
+        setError(`Description ${itemDescription} is NOT valid.`);
+        return;
+      }
+
+      if (itemDescription && itemDescription.length > 255) {
+        setError(`Description ${itemDescription} is too long.`);
+        return;
+      }
+
+      if (itemBarcode && !validateBarcode(itemBarcode).valid) {
+        setError(`Barcode ${itemBarcode} is NOT valid.`);
+        return;
+      }
     }
 
     if (
+      edit === null &&
       inv
         .map((s) => s.items.map((i) => i.name))
         .flat(Infinity)
@@ -77,40 +117,34 @@ export default function CreateItem() {
       return;
     }
 
-    if (isNaN(itemInitialStock) || itemInitialStock < 0) {
-      setError(`Stock ${itemInitialStock} is invalid or lower than 0.`);
-      return;
-    }
-
-    if (itemDescription && !validate(itemDescription)) {
-      setError(`Description ${itemDescription} is NOT valid.`);
-      return;
-    }
-
-    if (itemDescription && itemDescription.length > 255) {
-      setError(`Description ${itemDescription} is too long.`);
-      return;
-    }
-
-    if (itemBarcode && !validateBarcode(itemBarcode).valid) {
-      setError(`Barcode ${itemBarcode} is NOT valid.`);
-      return;
-    }
-
     const itemToCreate: InventoryItem = {
       name: itemName,
-      description: validate(itemDescription) ? itemDescription : undefined,
-      stock: itemInitialStock,
+      description: validate(itemDescription)
+        ? itemDescription
+        : edit !== null
+          ? edit.item.description
+          : undefined,
+      stock: edit !== null ? edit.item.stock : itemInitialStock,
       barcode: validateBarcode(itemBarcode).valid
         ? validateBarcode(itemBarcode).code!
-        : undefined,
-      zaikode: itemInternalBarcode ? zaikoBarcode : undefined,
+        : edit !== null
+          ? edit.item.barcode
+          : undefined,
+      zaikode: itemInternalBarcode
+        ? zaikoBarcode
+        : edit !== null
+          ? edit.item.zaikode
+          : undefined,
     };
 
     setError(null);
 
     try {
-      await createItem(itemToCreate, itemParent);
+      await createItem(
+        itemToCreate,
+        edit !== null ? edit.set.name : itemParent,
+        edit,
+      );
     } catch (e) {
       setError(`Error creating item: ${e}`);
       return;
@@ -130,6 +164,13 @@ export default function CreateItem() {
           {error}
         </Alert>
       )}
+      {edit && (
+        <Alert className="mb-4" color="primary">
+          <p>
+            Editing <b>{edit.item.name}</b> on SET <b>{edit.set.name}</b>
+          </p>
+        </Alert>
+      )}
       <Form
         onSubmit={(e) => e.preventDefault()}
         className="flex flex-col w-full gap-4"
@@ -137,6 +178,8 @@ export default function CreateItem() {
         <div className="flex flex-row w-full gap-2">
           <div className="w-full">
             <Select
+              isDisabled={edit !== null}
+              defaultSelectedKeys={edit === null ? [] : [edit.set.name]}
               label={<label>Where to store the ITEM?</label>}
               aria-label="Select SET"
               placeholder="SET where you'll store the ITEM"
@@ -160,6 +203,7 @@ export default function CreateItem() {
               placeholder="Name of your item here"
               title="Only letters, numbers, and spaces are allowed."
               onChange={(e) => setItemName(e.target.value.trim())}
+              defaultValue={edit !== null ? edit.item.name : ""}
             />
             <p className="text-sm text-default-700 mt-2">
               Only letters, numbers, and spaces are allowed. Required.
@@ -174,6 +218,7 @@ export default function CreateItem() {
             placeholder="Description of your item here"
             title="Only letters, numbers, and spaces are allowed."
             onChange={(e) => setItemDescription(e.target.value.trim())}
+            defaultValue={edit !== null ? (edit.item.description ?? "") : ""}
           />
           <p className="text-sm text-default-700 mt-2">
             A description for you to better identify this item. Optional.
@@ -182,6 +227,7 @@ export default function CreateItem() {
         <div className="flex flex-row w-full gap-2">
           <div className="w-full">
             <NumberInput
+              isDisabled={edit !== null}
               label={<label>Initial stock of your ITEM</label>}
               id="item_stk"
               type="number"
@@ -201,6 +247,7 @@ export default function CreateItem() {
               type="text"
               placeholder="Enter an EAN-13 or UPC-A code."
               onChange={(e) => setItemBarcode(e.target.value.trim())}
+              defaultValue={edit !== null ? (edit.item.barcode ?? "") : ""}
             />
             <p className="text-sm text-default-700 mt-2">
               {itemBarcode && validateBarcode(itemBarcode).valid && (
@@ -244,7 +291,7 @@ export default function CreateItem() {
             await handleCreateItem();
           }}
         >
-          Create item
+          {edit === null ? "Create ITEM" : "Edit ITEM"}
         </Button>
       </Form>
 

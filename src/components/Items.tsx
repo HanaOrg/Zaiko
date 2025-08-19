@@ -14,6 +14,7 @@ import {
 import { validate, normalize } from "@zakahacecosas/string-utils";
 import { useState } from "react";
 import { generateBarcode, validateBarcode } from "../api/barcode";
+import { useNavigate } from "react-router";
 
 type MatchSet = { type: "set"; set: InventorySet };
 type MatchItem = { type: "item"; set: InventorySet; item: InventoryItem };
@@ -44,6 +45,8 @@ function ListedItem({
   setDeleteItemModal: ModalCallback;
   settings: Settings;
 }) {
+  const navigate = useNavigate();
+
   function colorizeMatch(str: string) {
     if (!validate(colorizer)) return str;
     const normalizedSet = new Set(colorizer.split("").map((s) => normalize(s)));
@@ -130,6 +133,18 @@ function ListedItem({
               }
             >
               <b>-</b> Decrease stock
+            </Button>
+            <Button
+              href="#"
+              variant="flat"
+              color="primary"
+              onPress={() =>
+                navigate(
+                  `/create-item?edit=true&item=${encodeURIComponent(JSON.stringify(item))}&set=${encodeURIComponent(JSON.stringify(parentSet))}`,
+                )
+              }
+            >
+              Edit this item
             </Button>
             <Button
               color="danger"

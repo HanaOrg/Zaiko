@@ -107,18 +107,27 @@ export async function createSet(setName: string): Promise<void> {
 export async function createItem(
   item: InventoryItem,
   at: string,
+  edit: { item: InventoryItem; set: InventorySet } | null,
 ): Promise<void> {
   const inv = await getUserData("inventory");
   const set = inv.find((s) => fmtName(s.name) === fmtName(at));
 
   if (!set) return;
 
-  if (set.items.map((i) => fmtName(i.name)).includes(fmtName(item.name)))
+  if (
+    !edit &&
+    set.items.map((i) => fmtName(i.name)).includes(fmtName(item.name))
+  )
     return;
+
+  const items =
+    edit === null
+      ? [...set.items, item]
+      : [...set.items.filter((i) => i.name !== edit.item.name), item];
 
   const newSet = {
     name: set.name,
-    items: [...set.items, item],
+    items,
   };
 
   const newInv = [
