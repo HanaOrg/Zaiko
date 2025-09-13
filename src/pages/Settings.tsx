@@ -52,7 +52,7 @@ export default function SettingsPage() {
       description: "Settings were successfully updated.",
       timeout: 3000,
       shouldShowTimeoutProgress: true,
-      color: "success",
+      color: "primary",
       variant: "bordered",
     });
   }
@@ -148,8 +148,16 @@ export default function SettingsPage() {
             document.body.dataset["bsTheme"] === "light" ? "primary" : "default"
           }
           variant="flat"
-          onClick={async () => {
+          onPress={async () => {
             await exportData("json");
+            addToast({
+              title: "JSON file exported!",
+              description: "It's right where you specified.",
+              timeout: 3000,
+              shouldShowTimeoutProgress: true,
+              color: "foreground",
+              variant: "bordered",
+            });
           }}
         >
           Export in JSON format
@@ -161,6 +169,14 @@ export default function SettingsPage() {
           variant="flat"
           onPress={async () => {
             await exportData("xlsx");
+            addToast({
+              title: "Excel file exported!",
+              description: "It's on your Downloads folder.",
+              timeout: 3000,
+              shouldShowTimeoutProgress: true,
+              color: "foreground",
+              variant: "bordered",
+            });
           }}
         >
           Export in Microsoft Excel format
@@ -172,6 +188,14 @@ export default function SettingsPage() {
           variant="flat"
           onPress={async () => {
             await exportData("csv");
+            addToast({
+              title: "CSV file exported!",
+              description: "It's right where you specified.",
+              timeout: 3000,
+              shouldShowTimeoutProgress: true,
+              color: "foreground",
+              variant: "bordered",
+            });
           }}
         >
           Export in CSV format

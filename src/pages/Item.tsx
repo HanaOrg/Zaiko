@@ -85,8 +85,8 @@ export default function CreateItem() {
         return;
       }
 
-      if (isNaN(itemInitialStock) || itemInitialStock < 0) {
-        setError(`Stock ${itemInitialStock} is invalid or lower than 0.`);
+      if (isNaN(itemInitialStock) || itemInitialStock <= 0) {
+        setError(`Stock ${itemInitialStock} is invalid or equal/lower than 0.`);
         return;
       }
 

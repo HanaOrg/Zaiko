@@ -367,17 +367,17 @@ function ItemRenderer({
       {inventory.map((s) => {
         if (s.items.length === 0) {
           return (
-            <Card
-              key={fmtName(s.name)}
-              className="flex w-100 justify-content-between"
-              style={{ alignItems: "center" }}
-            >
-              <CardHeader>
-                <h3 className="fw-bold mb-1">{s.name}</h3>
+            <Card key={fmtName(s.name)} className="flex flex-col my-2">
+              <CardHeader
+                className="flex flex-row w-full justify-content-between"
+                style={{ alignItems: "center" }}
+              >
+                <h3 className="fw-bold">{s.name}</h3>
               </CardHeader>
               <CardBody>
                 <p>
-                  This set is empty. Add some items to it!
+                  <b>This set is empty. Add some items to it!</b>
+                  <br />
                   <Button
                     color="danger"
                     variant="bordered"
@@ -389,7 +389,7 @@ function ItemRenderer({
                       })
                     }
                   >
-                    Or well, delete this set.
+                    Delete this set instead.
                   </Button>
                 </p>
               </CardBody>

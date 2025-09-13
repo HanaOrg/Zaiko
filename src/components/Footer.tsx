@@ -1,4 +1,4 @@
-import { Divider, Link } from "@heroui/react";
+import { Divider } from "@heroui/react";
 import { useState } from "react";
 import {
   Modal,
@@ -22,18 +22,20 @@ export function AboutModal({
           <h1>About</h1>
         </ModalHeader>
         <ModalBody>
-          <h1 className="text-3xl">Zaiko,</h1>
-          <h2>inventory made easy</h2>
+          <div>
+            <h1 className="text-3xl p-0 m-0">Zaiko,</h1>
+            <h2 className="m-0 p-0">inventory made easy</h2>
+          </div>
           <p className="text-lg">
             Created and maintained by{" "}
-            <Link
-              className="text-lg"
-              href="https://github.com/zakahacecosas"
+            <a
+              className="text-lg text-primary"
+              href="https://github.com/ZakaHaceCosas/"
               target="_blank"
               rel="noopener noreferrer"
             >
               @ZakaHaceCosas
-            </Link>
+            </a>
             .<br />
             Published by the Hana org.
           </p>

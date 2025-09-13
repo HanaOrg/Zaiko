@@ -191,39 +191,41 @@ export async function deleteSet(set: string) {
 }
 
 export async function exportData(format: "csv" | "json" | "xlsx") {
-  const path = await save({
-    title: "Where to export data to?",
-    canCreateDirectories: true,
-    defaultPath: "zaiko-inventory",
-    filters:
-      format === "json"
-        ? [
-            {
-              name: "Valid JSON files",
-              extensions: ["json"],
-            },
-          ]
-        : format === "csv"
-          ? [
-              {
-                name: "Valid CSV files",
-                extensions: ["csv"],
-              },
-            ]
-          : [
-              {
-                name: "Valid Excel files",
-                extensions: ["xlsx"],
-              },
-            ],
-  });
-
+  const path =
+    format === "xlsx"
+      ? "a"
+      : await save({
+          title: "Where to export data to?",
+          canCreateDirectories: true,
+          defaultPath: "zaiko-inventory",
+          filters:
+            format === "json"
+              ? [
+                  {
+                    name: "Valid JSON files",
+                    extensions: ["json"],
+                  },
+                ]
+              : format === "csv"
+                ? [
+                    {
+                      name: "Valid CSV files",
+                      extensions: ["csv"],
+                    },
+                  ]
+                : [
+                    {
+                      name: "Valid Excel files",
+                      extensions: ["xlsx"],
+                    },
+                  ],
+        });
   if (!path) return;
 
   const data = await getUserData("inventory");
 
   if (format === "json") {
-    await writeTextFile(path, JSON.stringify(data, undefined, 4));
+    await writeTextFile(path, JSON.stringify(data));
     return;
   } else if (format === "csv") {
     await writeTextFile(
@@ -288,8 +290,9 @@ export async function exportData(format: "csv" | "json" | "xlsx") {
       };
     });
 
+    // TODO: this always saves to /Downloads, not to where the user specifies
     xlsx(excelData, {
-      fileName: path,
+      fileName: "zaiko-inventory",
       extraLength: 5,
       writeMode: "writeFile", // https://docs.sheetjs.com/docs/solutions/output#example-remote-file
       writeOptions: {}, // https://docs.sheetjs.com/docs/api/write-options
