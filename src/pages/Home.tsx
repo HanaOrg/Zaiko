@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Inventory, Settings } from "../types/types";
+import { Inventory, InventoryItem, Settings } from "../types/types";
 import { getUserData, fmtName, DEFAULT_PREFERENCES } from "../api/data";
 import { Button, Alert } from "@heroui/react";
 import Footer from "../components/Footer";
@@ -14,11 +14,11 @@ import Wrapper from "../components/Wrapper";
 
 type stockModal = {
   visible: boolean;
-  item: string;
+  item: InventoryItem | null;
   set: string;
 };
 
-const defaultStockModal = { visible: false, item: "", set: "" };
+const defaultStockModal = { visible: false, item: null, set: "" };
 
 export default function Home() {
   const navigate = useNavigate();
@@ -43,7 +43,7 @@ export default function Home() {
           ? "Good evening"
           : "Good night";
 
-  const [userInv, setUserInv] = useState<Inventory>([]);
+  const [userInv, setUserInv] = useState<Inventory>({});
   const [settings, setSettings] = useState<Settings>(DEFAULT_PREFERENCES);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -69,7 +69,7 @@ export default function Home() {
           <Button href="#" color="primary" onPress={() => setSetModal(true)}>
             Create SET
           </Button>
-          {userInv.length > 0 && (
+          {Object.keys(userInv).length > 0 && (
             <Button
               href="#"
               variant="flat"
@@ -84,23 +84,25 @@ export default function Home() {
       </div>
       <div className="flex flex-column" style={{ gap: 20 }}>
         <div className="flex-grow-1 list-group" id="inventory">
-          {Array.isArray(userInv) && userInv.length > 0 ? (
-            userInv
+          {Object.values(userInv).length > 0 ? (
+            Object.values(userInv)
               .map((s) => s.items)
               .flat()
-              .filter((i) => i.stock <= settings.warnThreshold)
+              .filter((i) => i.stock <= settings.warn_threshold)
               .map((i) => (
                 <Alert
                   variant="solid"
                   color={
-                    i.stock <= settings.criticalThreshold ? "danger" : "warning"
+                    i.stock <= settings.critical_threshold
+                      ? "danger"
+                      : "warning"
                   }
-                  key={fmtName(i.name)}
+                  key={fmtName(i.id)}
                   className="mb-2"
                 >
                   <span>
                     Item <strong>{i.name}</strong> is
-                    {i.stock <= settings.criticalThreshold
+                    {i.stock <= settings.critical_threshold
                       ? " critically low on "
                       : " running out of "}
                     stock.
@@ -117,7 +119,7 @@ export default function Home() {
           ) : (
             <></>
           )}
-          {!userInv || userInv.length === 0 ? (
+          {!userInv || Object.keys(userInv).length === 0 ? (
             <>
               <h1>No SET exists.</h1>
               <p>Create your first SET to start tracking your stocking!</p>
@@ -149,7 +151,7 @@ export default function Home() {
         close={() =>
           setOverwriteStockModal({
             visible: false,
-            item: "",
+            item: null,
             set: "",
           })
         }
@@ -160,7 +162,7 @@ export default function Home() {
         close={() =>
           setIncrementStockModal({
             visible: false,
-            item: "",
+            item: null,
             set: "",
           })
         }
@@ -171,7 +173,7 @@ export default function Home() {
         close={() =>
           setDecrementStockModal({
             visible: false,
-            item: "",
+            item: null,
             set: "",
           })
         }
@@ -182,7 +184,7 @@ export default function Home() {
         close={() =>
           setDeleteItemModal({
             visible: false,
-            item: "",
+            item: null,
             set: "",
           })
         }
@@ -193,7 +195,7 @@ export default function Home() {
         close={() =>
           setDeleteSetModal({
             visible: false,
-            item: "",
+            item: null,
             set: "",
           })
         }

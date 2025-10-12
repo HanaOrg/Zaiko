@@ -1,6 +1,5 @@
 destroy:
-  intensities:
-    - "*"
+  intensities: "*"
   targets:
     - "dist/"
     - "build/"
@@ -10,5 +9,13 @@ flagless:
   flaglessDestroy: true
   flaglessLint: true
   flaglessPretty: true
-buildCmd: "bun tauri build^powershell cp manifest.yaml build/manifest.yaml^powershell cp src-tauri/icons/icon.ico build/zaiko.ico^powershell cp src-tauri/target/release/zaiko.exe build/zaiko.exe^powershell cp src-tauri/target/release/zaiko.exe build/zaiko.exe^cd dist^kbi konpak ../build --platform=windows --id=zaiko --binary=zaiko.exe --icon=zaiko.ico --ver=0.1.0 --sfx"
+buildCmd:
+  - $tauri build
+  - ~cp manifest.yaml build/manifest.yaml
+  - ~cp src-tauri/icons/icon.ico build/zaiko.ico
+  - ~powershell cp src-tauri/target/release/zaiko.exe build/zaiko.exe
+  - ~powershell cp src-tauri/target/release/zaiko.exe build/zaiko.exe
+  - <kbi konpak build --platform=windows --id=zaiko --binary=zaiko.exe --icon=zaiko.ico --ver=0.1.0 --sfx
 updateCmdOverride: deps
+launchCmd:
+  - $tauri dev

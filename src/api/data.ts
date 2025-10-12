@@ -1,29 +1,23 @@
+import Database from "@tauri-apps/plugin-sql";
+import { writeTextFile, readTextFile } from "@tauri-apps/plugin-fs";
 import {
-  writeTextFile,
-  exists,
-  BaseDirectory,
-  create,
-  readTextFile,
-  mkdir,
-} from "@tauri-apps/plugin-fs";
-import {
-  Inventory,
-  InventoryItem,
-  InventorySet,
+  type Inventory,
   isValidInventory,
-  Settings,
+  isValidItem,
+  type Settings,
 } from "../types/types";
 import { normalize, validate } from "@zakahacecosas/string-utils";
 import { save, open, confirm } from "@tauri-apps/plugin-dialog";
 import xlsx from "json-as-xlsx";
 import { json2csv } from "json-2-csv";
-import { appDataDir } from "@tauri-apps/api/path";
+import { InventoryItem } from "../types/types";
+import { uuidv7 } from "uuidv7";
 
 export const DEFAULT_PREFERENCES: Settings = {
-  appName: "Zaiko",
+  app_name: "Zaiko",
   theme: "light",
-  warnThreshold: 20,
-  criticalThreshold: 5,
+  warn_threshold: 20,
+  critical_threshold: 5,
 };
 
 export function fmtName(s: string): string {
@@ -35,159 +29,217 @@ export async function getUserData(concretely: "settings"): Promise<Settings>;
 export async function getUserData(
   concretely: "settings" | "inventory",
 ): Promise<Settings | Inventory> {
-  const path = concretely === "settings" ? "settings.json" : "inventory.json";
-  const defaultData = concretely === "settings" ? DEFAULT_PREFERENCES : [];
-  if (!(await exists(await appDataDir()))) {
-    await mkdir(await appDataDir());
-  }
-  const hasData = await exists(path, {
-    baseDir: BaseDirectory.AppData,
-  });
-  if (!hasData) {
-    const newFile = await create(path, {
-      baseDir: BaseDirectory.AppData,
-    });
-    await newFile.write(new TextEncoder().encode(JSON.stringify(defaultData)));
-    await newFile.close();
-    return defaultData;
-  }
-  const data = await readTextFile(path, {
-    baseDir: BaseDirectory.AppData,
-  });
-  if (!validate(data)) return defaultData;
-  try {
-    const returnedData = JSON.parse(data);
-    if (concretely === "inventory") {
-      const r = returnedData as Inventory;
+  const db = await setupDB();
+  if (concretely === "inventory") {
+    const sets = await db.select(
+      `
+    SELECT * FROM inv_sets
+  `,
+    );
+    const items = await db.select("SELECT * FROM inv_items");
 
-      r.forEach((i) => {
-        i.items = i.items.filter(
-          (i) =>
-            typeof i === "object" &&
-            i !== null &&
-            "name" in i &&
-            validate(i.name),
-        );
-      });
+    const inventory: Inventory = {};
 
-      return r;
+    for (const set of sets as any) {
+      inventory[set.name] = { id: set.id, items: [] };
     }
-    return {
-      ...DEFAULT_PREFERENCES,
-      ...returnedData,
-      appName: validate(returnedData.appName) ? returnedData.appName : "Zaiko",
-    };
-  } catch {
-    return defaultData;
+
+    for (const item of items as any) {
+      const { set_id, ...row } = item as any;
+      if (!isValidItem(item)) {
+        console.warn(`Invalidated ${item} from DB. Something's wrong.`);
+        continue;
+      }
+      const set_name = (sets as any).find(
+        (s: { id: string; name: string }) => s.id === set_id,
+      ).name;
+      inventory[set_name]!.items.push(row);
+    }
+
+    return inventory;
   }
+  return ((await db.select("SELECT * FROM settings")) as any)[0];
 }
 
-export async function setUserData(to: Settings | Inventory): Promise<void> {
-  const path = Array.isArray(to) ? "inventory.json" : "settings.json";
-  await writeTextFile(path, JSON.stringify(to), {
-    baseDir: BaseDirectory.AppData,
-  });
+/** use 0 to indicate settings, 1 to indicate inventory */
+export async function setUserData(to: 0, data: Settings): Promise<void>;
+export async function setUserData(
+  to: 1,
+  data:
+    | string
+    | {
+        set_id: string | 0;
+        item: InventoryItem | InventoryItem[] | 0;
+        gen?: string;
+      },
+): Promise<void>;
+export async function setUserData(
+  to: 0 | 1,
+  data:
+    | Settings
+    | string
+    | {
+        set_id: string | 0;
+        item: InventoryItem | InventoryItem[] | 0;
+        gen?: string;
+      },
+): Promise<void> {
+  const db = await setupDB();
+  if (to === 0) {
+    const d = data as Settings;
+    await db.execute(
+      "REPLACE INTO settings (id, app_name, theme, warn_threshold, critical_threshold) VALUES (1, $1, $2, $3, $4)",
+      [d.app_name, d.theme, d.warn_threshold, d.critical_threshold],
+    );
+  } else {
+    if (typeof data === "string") {
+      await db.execute("INSERT INTO inv_sets (id, name) VALUES ($1, $2)", [
+        uuidv7(),
+        fmtName(data),
+      ]);
+    } else {
+      const d = data as {
+        set_id: string;
+        item: InventoryItem | InventoryItem[] | 0;
+        gen?: string;
+      };
+      if (d.gen) {
+        await db.execute("INSERT INTO inv_sets (id, name) VALUES ($1, $2)", [
+          d.set_id,
+          fmtName(d.gen),
+        ]);
+      }
+      if (Array.isArray(d.item)) {
+        d.item.forEach(async (item) => {
+          await db.execute(
+            "INSERT INTO inv_items (set_id, name, description, stock, barcode, zaikode, id) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+            [
+              d.set_id,
+              item.name,
+              item.description,
+              item.stock,
+              item.barcode,
+              item.zaikode,
+              uuidv7(),
+            ],
+          );
+        });
+      } else if (d.item === 0) {
+        await db.execute("DELETE * FROM inv_sets WHERE id = $1", [d.set_id]);
+        await db.execute("DELETE * FROM inv_items WHERE set_id = $1", [
+          d.set_id,
+        ]);
+      } else {
+        await db.execute(
+          "INSERT INTO inv_items (set_id, name, description, stock, barcode, zaikode) VALUES ($1, $2, $3, $4, $5, $6)",
+          [
+            d.set_id,
+            d.item.name,
+            d.item.description,
+            d.item.stock,
+            d.item.barcode,
+            d.item.zaikode,
+          ],
+        );
+      }
+    }
+  }
+
   return;
 }
 
 export async function createSet(setName: string): Promise<void> {
   const inv = await getUserData("inventory");
-
-  const set: InventorySet = {
-    name: fmtName(setName),
-    items: [],
-  };
-
-  if (inv.map((i) => fmtName(i.name)).includes(set.name)) return;
-
-  const newInv: Inventory = [set, ...inv];
-
-  await setUserData(newInv);
+  if (inv[fmtName(setName)]) return;
+  await setUserData(1, setName);
 }
 export async function createItem(
   item: InventoryItem,
   at: string,
-  edit: { item: InventoryItem; set: InventorySet } | null,
+  edit: { item: InventoryItem; set: string } | null,
 ): Promise<void> {
   const inv = await getUserData("inventory");
-  const set = inv.find((s) => fmtName(s.name) === fmtName(at));
+  const set = fmtName(at);
 
-  if (!set) return;
+  if (!inv[set]) return;
 
-  if (
-    !edit &&
-    set.items.map((i) => fmtName(i.name)).includes(fmtName(item.name))
-  )
+  if (!edit && inv[set].items.map((i) => i.id).includes(item.id)) return;
+
+  if (edit) {
+    const db = await setupDB();
+    await db.execute(
+      [
+        "UPDATE inv_items",
+        "SET name = $1, description = $2, barcode = $3, zaikode = $4",
+        "WHERE id = $5",
+      ].join("\n"),
+      [item.name, item.description, item.barcode, item.zaikode, edit.item.id],
+    );
     return;
+  }
 
-  const items =
-    edit === null
-      ? [...set.items, item]
-      : [...set.items.filter((i) => i.name !== edit.item.name), item];
-
-  const newSet = {
-    name: set.name,
-    items,
-  };
-
-  const newInv = [
-    ...inv.filter((s) => fmtName(s.name) !== fmtName(at)),
-    newSet,
-  ];
-
-  await setUserData(newInv);
+  await setUserData(1, {
+    set_id: inv[set].id,
+    item: [...inv[set].items, item],
+  });
 }
 
 export async function refreshZaiko() {
-  await writeTextFile("inventory.json", JSON.stringify([]), {
-    baseDir: BaseDirectory.AppData,
-  });
+  const db = await setupDB();
+  await db.execute("DELETE * FROM inv_sets");
+  await db.execute("DELETE * FROM inv_items");
+  await setUserData(0, DEFAULT_PREFERENCES);
   return;
 }
 
 export async function overwriteStock(params: {
-  item: string;
+  item: InventoryItem;
   set: string;
   stock: number;
   action: "overwrite" | "increment" | "decrement";
 }) {
   const { item, set, stock, action } = params;
   const inv = await getUserData("inventory");
-  const foundSet = inv.find((s) => fmtName(s.name) === fmtName(set));
+  const foundSet = inv[fmtName(set)];
   if (!foundSet) return;
-  const foundItem = foundSet.items.find(
-    (i) => fmtName(i.name) === fmtName(item),
-  );
+  const foundItem = foundSet.items.find((i) => i.id === item.id);
   if (!foundItem) return;
 
-  if (action === "overwrite") foundItem.stock = stock;
-  if (action === "increment") foundItem.stock += stock;
-  if (action === "decrement") foundItem.stock -= stock;
+  let newStock: number | null = null;
 
-  await setUserData(inv);
+  if (action === "overwrite") newStock = stock;
+  if (action === "increment") newStock = foundItem.stock + stock;
+  if (action === "decrement") newStock = foundItem.stock - stock;
+
+  if (!newStock || isNaN(newStock)) throw `newStock not set or not number`;
+
+  const db = await setupDB();
+  await db.execute(
+    ["UPDATE inv_items", "SET stock = $1", "WHERE id = $2"].join("\n"),
+    [newStock, item.id],
+  );
 }
 
-export async function deleteItem(params: { item: string; set: string }) {
+export async function deleteItem(params: { item: InventoryItem; set: string }) {
   const { item, set } = params;
   const inv = await getUserData("inventory");
-  const foundSet = inv.find((s) => fmtName(s.name) === fmtName(set));
+  const foundSet = inv[fmtName(set)];
   if (!foundSet) return;
-  const newInv = inv.map((s) => {
-    if (fmtName(s.name) !== fmtName(set)) return s;
-    return {
-      ...s,
-      items: s.items.filter((i) => fmtName(i.name) !== fmtName(item)),
-    };
-  });
-  await setUserData(newInv);
+  await (
+    await setupDB()
+  ).execute("DELETE FROM inv_items WHERE set_id = $1 AND id = $2", [
+    foundSet.id,
+    item.id,
+  ]);
 }
 
 export async function deleteSet(set: string) {
   const inv = await getUserData("inventory");
-  const foundSet = inv.find((s) => fmtName(s.name) === fmtName(set));
-  if (!foundSet) return;
-  const newInv = inv.filter((s) => fmtName(s.name) !== fmtName(set));
-  await setUserData(newInv);
+  if (!inv[fmtName(set)]) return;
+  const id = inv[fmtName(set)]!.id;
+  const db = await setupDB();
+  await db.execute("DELETE FROM inv_items WHERE set_id = $1", [id]);
+  await db.execute("DELETE FROM inv_sets WHERE id = $1", [id]);
 }
 
 export async function exportData(format: "csv" | "json" | "xlsx") {
@@ -231,13 +283,13 @@ export async function exportData(format: "csv" | "json" | "xlsx") {
     await writeTextFile(
       path,
       json2csv(
-        data.flatMap((s) =>
-          s.items.map((i) => {
+        Object.entries(data).map(([k, i]) =>
+          i.items.map((it) => {
             return {
-              "Parent SET Name": s.name,
-              "ITEM Name": i.name,
-              "ITEM Description": i.description,
-              "ITEM Stock": i.stock,
+              "Parent SET Name": k,
+              "ITEM Name": it.name,
+              "ITEM Description": it.description,
+              "ITEM Stock": it.stock,
             };
           }),
         ),
@@ -253,9 +305,9 @@ export async function exportData(format: "csv" | "json" | "xlsx") {
     );
     return;
   } else {
-    const excelData = data.map((s) => {
+    const excelData = Object.entries(data).map(([k, i]) => {
       return {
-        sheet: fmtName(s.name),
+        sheet: k,
         columns: [
           {
             label: "Name",
@@ -278,13 +330,13 @@ export async function exportData(format: "csv" | "json" | "xlsx") {
             value: (row: any) => row.zaikode ?? "(NOT PROVIDED)",
           },
         ],
-        content: s.items.map((i) => {
+        content: i.items.map((it) => {
           return {
-            name: i.name,
-            stock: i.stock,
-            desc: i.description ?? null,
-            barcode: i.barcode ?? null,
-            zaikode: i.zaikode ?? null,
+            name: it.name,
+            stock: it.stock,
+            desc: it.description ?? null,
+            barcode: it.barcode ?? null,
+            zaikode: it.zaikode ?? null,
           };
         }),
       };
@@ -330,7 +382,7 @@ export async function importData(): Promise<
 
   // bless https://stackoverflow.com/a/56116458
   const proceed = await confirm(
-    `Are you sure? Importing this file with ${obj.length} sets (totalling ${obj.reduce((count, current) => count + current.items.length, 0)} items) will overwrite all of your existing data.`,
+    `Are you sure? Importing this file with ${Object.keys(obj).length} sets (totalling ${Object.values(obj).reduce((count, current) => count + current.items.length, 0)} items) will overwrite all of your existing data.`,
     {
       title: "Zaiko",
       kind: "warning",
@@ -341,7 +393,45 @@ export async function importData(): Promise<
 
   if (!proceed) return "aborted";
 
-  await setUserData(obj);
+  Object.entries(obj).forEach(async (o) => {
+    await setUserData(1, { set_id: o[1].id, item: o[1].items, gen: o[0] });
+  });
 
   return 0;
+}
+
+async function setupDB() {
+  const database = await Database.load("sqlite:zaiko.db");
+  await database.execute(`PRAGMA foreign_keys = ON;`);
+  await database.execute(`
+CREATE TABLE IF NOT EXISTS settings (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    theme TEXT CHECK(theme IN ('dark','light')) NOT NULL DEFAULT 'light',
+    app_name TEXT NOT NULL DEFAULT 'Zaiko',
+    warn_threshold INTEGER NOT NULL DEFAULT 20,
+    critical_threshold INTEGER NOT NULL DEFAULT 5
+);
+`);
+  await database.execute(`
+INSERT INTO settings (id)
+SELECT 1
+WHERE NOT EXISTS (SELECT 1 FROM settings WHERE id = 1);
+`);
+  await database.execute(`CREATE TABLE IF NOT EXISTS inv_sets (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+);
+`);
+  await database.execute(`CREATE TABLE IF NOT EXISTS inv_items (
+    id TEXT PRIMARY KEY,
+    set_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    stock INTEGER NOT NULL,
+    barcode TEXT,
+    zaikode TEXT,
+    FOREIGN KEY (set_id) REFERENCES inv_sets(id)
+);
+`);
+  return database;
 }

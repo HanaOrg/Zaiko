@@ -38,7 +38,7 @@ export default function SettingsPage() {
     async function handler() {
       const setts = await getUserData("settings");
       setSettings(setts);
-      setAppName(setts.appName);
+      setAppName(setts.app_name);
 
       setLoading(false);
     }
@@ -46,15 +46,26 @@ export default function SettingsPage() {
   }, []);
 
   async function handleSettings() {
-    await setUserData(settings);
-    addToast({
-      title: "Changes saved!",
-      description: "Settings were successfully updated.",
-      timeout: 3000,
-      shouldShowTimeoutProgress: true,
-      color: "primary",
-      variant: "bordered",
-    });
+    try {
+      await setUserData(0, settings);
+      addToast({
+        title: "Changes saved!",
+        description: "Settings were successfully updated.",
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+        color: "primary",
+        variant: "bordered",
+      });
+    } catch (error) {
+      addToast({
+        title: "Error",
+        description: String(error),
+        timeout: 4000,
+        shouldShowTimeoutProgress: true,
+        color: "danger",
+        variant: "bordered",
+      });
+    }
   }
 
   const [refreshModalVisible, setRefreshModalVisible] =
@@ -71,12 +82,12 @@ export default function SettingsPage() {
         <div className="flex flex-col gap-2 w-full">
           <Input
             type="text"
-            id="appName"
-            value={settings.appName}
+            id="app_name"
+            value={settings.app_name}
             onChange={(e) =>
               setSettings({
                 ...settings,
-                appName: e.target.value,
+                app_name: e.target.value,
               })
             }
             onKeyDown={async (e) => {
@@ -99,12 +110,12 @@ export default function SettingsPage() {
             <SelectItem key="dark">Dark</SelectItem>
           </Select>
           <NumberInput
-            id="appName"
-            value={settings.warnThreshold}
+            id="warn_threshold"
+            value={settings.warn_threshold}
             onValueChange={(v) =>
               setSettings({
                 ...settings,
-                warnThreshold: v,
+                warn_threshold: v,
               })
             }
             onKeyDown={async (e) => {
@@ -114,12 +125,12 @@ export default function SettingsPage() {
             placeholder="What stock an item needs to go below of to show a warning."
           />
           <NumberInput
-            id="appName"
-            value={settings.criticalThreshold}
+            id="critical_threshold"
+            value={settings.critical_threshold}
             onValueChange={(v) =>
               setSettings({
                 ...settings,
-                criticalThreshold: v,
+                critical_threshold: v,
               })
             }
             onKeyDown={async (e) => {
@@ -129,7 +140,13 @@ export default function SettingsPage() {
             placeholder="What stock an item needs to go below of to show a critical warning."
           />
         </div>
-        <Button type="submit" color="primary" onPress={handleSettings}>
+        <Button
+          type="submit"
+          color="primary"
+          onPress={async () => {
+            handleSettings();
+          }}
+        >
           Save changes
         </Button>
       </Form>
@@ -149,15 +166,26 @@ export default function SettingsPage() {
           }
           variant="flat"
           onPress={async () => {
-            await exportData("json");
-            addToast({
-              title: "JSON file exported!",
-              description: "It's right where you specified.",
-              timeout: 3000,
-              shouldShowTimeoutProgress: true,
-              color: "foreground",
-              variant: "bordered",
-            });
+            try {
+              await exportData("json");
+              addToast({
+                title: "JSON file exported!",
+                description: "It's right where you specified.",
+                timeout: 3000,
+                shouldShowTimeoutProgress: true,
+                color: "foreground",
+                variant: "bordered",
+              });
+            } catch (error) {
+              addToast({
+                title: "Error",
+                description: String(error),
+                timeout: 4000,
+                shouldShowTimeoutProgress: true,
+                color: "danger",
+                variant: "bordered",
+              });
+            }
           }}
         >
           Export in JSON format
@@ -168,15 +196,26 @@ export default function SettingsPage() {
           }
           variant="flat"
           onPress={async () => {
-            await exportData("xlsx");
-            addToast({
-              title: "Excel file exported!",
-              description: "It's on your Downloads folder.",
-              timeout: 3000,
-              shouldShowTimeoutProgress: true,
-              color: "foreground",
-              variant: "bordered",
-            });
+            try {
+              await exportData("xlsx");
+              addToast({
+                title: "Excel file exported!",
+                description: "It's on your Downloads folder.",
+                timeout: 3000,
+                shouldShowTimeoutProgress: true,
+                color: "foreground",
+                variant: "bordered",
+              });
+            } catch (error) {
+              addToast({
+                title: "Error",
+                description: String(error),
+                timeout: 4000,
+                shouldShowTimeoutProgress: true,
+                color: "danger",
+                variant: "bordered",
+              });
+            }
           }}
         >
           Export in Microsoft Excel format
@@ -187,15 +226,26 @@ export default function SettingsPage() {
           }
           variant="flat"
           onPress={async () => {
-            await exportData("csv");
-            addToast({
-              title: "CSV file exported!",
-              description: "It's right where you specified.",
-              timeout: 3000,
-              shouldShowTimeoutProgress: true,
-              color: "foreground",
-              variant: "bordered",
-            });
+            try {
+              await exportData("csv");
+              addToast({
+                title: "CSV file exported!",
+                description: "It's right where you specified.",
+                timeout: 3000,
+                shouldShowTimeoutProgress: true,
+                color: "foreground",
+                variant: "bordered",
+              });
+            } catch (error) {
+              addToast({
+                title: "Error",
+                description: String(error),
+                timeout: 4000,
+                shouldShowTimeoutProgress: true,
+                color: "danger",
+                variant: "bordered",
+              });
+            }
           }}
         >
           Export in CSV format
@@ -250,7 +300,7 @@ export default function SettingsPage() {
             <Button
               type="submit"
               color="danger"
-              onClick={async () => {
+              onPress={async () => {
                 await refreshZaiko();
                 setRefreshModalVisible(false);
               }}

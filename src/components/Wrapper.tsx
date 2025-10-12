@@ -20,7 +20,7 @@ export default function Wrapper({
     async function h() {
       const set = await getUserData("settings");
       document.getElementsByTagName("html")![0]!.className = set.theme;
-      setAppName(set.appName);
+      setAppName(set.app_name);
     }
     h();
   }, []);
@@ -29,7 +29,9 @@ export default function Wrapper({
     return (
       <div
         style={{
-          margin: 40,
+          backgroundColor: "#000",
+          width: "100vw",
+          height: "100vh",
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
@@ -38,7 +40,7 @@ export default function Wrapper({
         }}
       >
         <Spinner variant="default" role="status" />
-        <h1 className="text-3xl font-bold">Loading</h1>
+        <h1 className="text-white text-3xl font-bold">Loading...</h1>
       </div>
     );
 

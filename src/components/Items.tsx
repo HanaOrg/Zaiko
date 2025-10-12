@@ -1,5 +1,5 @@
 import { fmtName } from "../api/data";
-import { InventoryItem, InventorySet, Settings } from "../types/types";
+import { Inventory, InventoryItem, Settings } from "../types/types";
 import {
   Button,
   Chip,
@@ -16,13 +16,16 @@ import { useState } from "react";
 import { generateBarcode, validateBarcode } from "../api/barcode";
 import { useNavigate } from "react-router";
 
-type MatchSet = { type: "set"; set: InventorySet };
-type MatchItem = { type: "item"; set: InventorySet; item: InventoryItem };
+type MatchSet = {
+  type: "set";
+  set: { name: string; id: string; items: InventoryItem[] };
+};
+type MatchItem = { type: "item"; set: string; item: InventoryItem };
 type Matches = MatchSet | MatchItem;
 
 export type ModalCallback = (a: {
   visible: boolean;
-  item: string;
+  item: InventoryItem | null;
   set: string;
 }) => void;
 
@@ -37,7 +40,7 @@ function ListedItem({
   settings,
 }: {
   colorizer: string | null;
-  parentSet: InventorySet;
+  parentSet: string;
   item: InventoryItem;
   setOverwriteStockModal: ModalCallback;
   setIncrementStockModal: ModalCallback;
@@ -64,12 +67,15 @@ function ListedItem({
   return (
     <Card key={fmtName(item.name)} className="flex items-start justify-between">
       <CardHeader>
-        <h3 className="text-lg mr-auto">{colorizeMatch(item.name)}</h3>
+        <h3 className="text-lg mr-auto">
+          {colorizeMatch(item.name)}{" "}
+          <span className="text-sm opacity-20">{item.id}</span>
+        </h3>
         <Chip
           color={
-            item.stock <= settings.criticalThreshold
+            item.stock <= settings.critical_threshold
               ? "danger"
-              : item.stock <= settings.warnThreshold
+              : item.stock <= settings.warn_threshold
                 ? "warning"
                 : "primary"
           }
@@ -103,8 +109,8 @@ function ListedItem({
               onPress={() =>
                 setOverwriteStockModal({
                   visible: true,
-                  item: item.name,
-                  set: parentSet.name,
+                  item: item,
+                  set: parentSet,
                 })
               }
             >
@@ -115,8 +121,8 @@ function ListedItem({
               onPress={() =>
                 setIncrementStockModal({
                   visible: true,
-                  item: item.name,
-                  set: parentSet.name,
+                  item: item,
+                  set: parentSet,
                 })
               }
             >
@@ -127,8 +133,8 @@ function ListedItem({
               onPress={() =>
                 setDecrementStockModal({
                   visible: true,
-                  item: item.name,
-                  set: parentSet.name,
+                  item: item,
+                  set: parentSet,
                 })
               }
             >
@@ -151,8 +157,8 @@ function ListedItem({
               onPress={() =>
                 setDeleteItemModal({
                   visible: true,
-                  item: item.name,
-                  set: parentSet.name,
+                  item: item,
+                  set: parentSet,
                 })
               }
             >
@@ -194,7 +200,7 @@ export function ItemsList({
   setDeleteSetModal,
   settings,
 }: {
-  inventory: InventorySet[];
+  inventory: Inventory;
   setOverwriteStockModal: ModalCallback;
   setIncrementStockModal: ModalCallback;
   setDecrementStockModal: ModalCallback;
@@ -210,9 +216,9 @@ export function ItemsList({
 
     const newMatches: Matches[] = [];
 
-    inventory.forEach((set) => {
-      const setMatch = fmtName(set.name).includes(fmtName(query));
-      const matchingItems = set.items.filter(
+    Object.entries(inventory).forEach(([set, items]) => {
+      const setMatch = fmtName(set).includes(fmtName(query));
+      const matchingItems = items.items.filter(
         (item) =>
           fmtName(item.name).includes(fmtName(query)) ||
           (item.barcode || "").includes(query) ||
@@ -225,9 +231,15 @@ export function ItemsList({
         }),
       );
 
-      if (setMatch) {
-        newMatches.push({ type: "set", set: set });
-      }
+      if (setMatch && inventory[set])
+        newMatches.push({
+          type: "set",
+          set: {
+            name: set,
+            id: inventory[set].id,
+            items: inventory[set].items,
+          },
+        });
     });
 
     setMatches(newMatches);
@@ -259,8 +271,9 @@ export function ItemsList({
 
               {matches.map((i) =>
                 i.type === "set" ? (
-                  <li key={i.set.name}>
-                    Found SET <b>{i.set.name}</b>.<br />
+                  <li key={i.set.id}>
+                    Found SET <b>{i.set.name}</b>.
+                    <br />
                     {i.set.items.length === 0 ? (
                       <p>This SET is empty.</p>
                     ) : (
@@ -285,7 +298,7 @@ export function ItemsList({
                         setDeleteSetModal({
                           visible: true,
                           set: i.set.name,
-                          item: "",
+                          item: null,
                         })
                       }
                     >
@@ -295,7 +308,7 @@ export function ItemsList({
                 ) : (
                   <>
                     <p className=" opacity-[0.5] italic">
-                      Found this match on SET {i.set.name}.{" "}
+                      Found this match on SET {i.set}.{" "}
                       <span
                         className="text-danger"
                         style={{
@@ -306,7 +319,7 @@ export function ItemsList({
                           setDeleteSetModal({
                             visible: true,
                             set: i.item.name,
-                            item: "",
+                            item: null,
                           })
                         }
                       >
@@ -317,7 +330,7 @@ export function ItemsList({
                       colorizer={searchQ}
                       parentSet={i.set}
                       item={i.item}
-                      key={i.item.name}
+                      key={i.item.id}
                       setDecrementStockModal={setDecrementStockModal}
                       setIncrementStockModal={setIncrementStockModal}
                       setOverwriteStockModal={setOverwriteStockModal}
@@ -354,7 +367,7 @@ function ItemRenderer({
   setDeleteSetModal,
   settings,
 }: {
-  inventory: InventorySet[];
+  inventory: Inventory;
   setDecrementStockModal: ModalCallback;
   setIncrementStockModal: ModalCallback;
   setOverwriteStockModal: ModalCallback;
@@ -364,15 +377,15 @@ function ItemRenderer({
 }) {
   return (
     <>
-      {inventory.map((s) => {
-        if (s.items.length === 0) {
+      {Object.entries(inventory).map(([set, items]) => {
+        if (items.items.length === 0) {
           return (
-            <Card key={fmtName(s.name)} className="flex flex-col my-2">
+            <Card key={fmtName(set)} className="flex flex-col my-2">
               <CardHeader
                 className="flex flex-row w-full justify-content-between"
                 style={{ alignItems: "center" }}
               >
-                <h3 className="fw-bold">{s.name}</h3>
+                <h3 className="fw-bold">{set}</h3>
               </CardHeader>
               <CardBody>
                 <p>
@@ -384,8 +397,8 @@ function ItemRenderer({
                     onPress={() =>
                       setDeleteSetModal({
                         visible: true,
-                        set: s.name,
-                        item: "",
+                        set,
+                        item: null,
                       })
                     }
                   >
@@ -396,21 +409,21 @@ function ItemRenderer({
             </Card>
           );
         } else {
-          const count = s.items
+          const count = items.items
             .map((i) => i.stock)
             .reduce((acc, cur) => acc + cur);
           return (
-            <Card key={fmtName(s.name)} className="flex flex-col my-2">
+            <Card key={fmtName(set)} className="flex flex-col my-2">
               <CardHeader
                 className="flex flex-row w-full justify-content-between"
                 style={{ alignItems: "center" }}
               >
-                <h3 className="text-xl mr-auto">{s.name}</h3>
+                <h3 className="text-xl mr-auto">{set}</h3>
                 <Chip
                   color={
-                    count < settings.criticalThreshold
+                    count < settings.critical_threshold
                       ? "danger"
-                      : count < settings.warnThreshold
+                      : count < settings.warn_threshold
                         ? "warning"
                         : "primary"
                   }
@@ -421,12 +434,12 @@ function ItemRenderer({
               </CardHeader>
               <CardBody>
                 <div className="flex flex-col gap-2">
-                  {s.items.map((item) => (
+                  {items.items.map((item) => (
                     <ListedItem
                       colorizer={null}
-                      parentSet={s}
+                      parentSet={set}
                       item={item}
-                      key={item.name}
+                      key={item.id}
                       setDecrementStockModal={setDecrementStockModal}
                       setIncrementStockModal={setIncrementStockModal}
                       setOverwriteStockModal={setOverwriteStockModal}
@@ -442,9 +455,9 @@ function ItemRenderer({
                   variant="flat"
                   className="w-full"
                   onPress={() =>
-                    setDeleteSetModal({ visible: true, set: s.name, item: "" })
+                    setDeleteSetModal({ visible: true, set: set, item: null })
                   }
-                  key={s.name + "_DELETE"}
+                  key={set + "_DELETE"}
                 >
                   <b>X</b> Delete this SET (all items will be deleted too!)
                 </Button>

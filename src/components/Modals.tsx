@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Inventory } from "../types/types";
+import { Inventory, InventoryItem, isValidItem } from "../types/types";
 import { validate } from "@zakahacecosas/string-utils";
 import { createSet, deleteItem, deleteSet, overwriteStock } from "../api/data";
 import {
@@ -24,19 +24,23 @@ export function CreateSetModal({
   const [error, setError] = useState<string | null>(null);
 
   async function handleCreateSet() {
-    if (!validate(setName)) {
-      setError(`Name ${setName} is NOT valid.`);
-      return;
+    try {
+      if (!validate(setName)) {
+        setError(`Name ${setName} is NOT valid.`);
+        return;
+      }
+
+      if (inv[setName]) {
+        setError(`SET ${setName} already exists.`);
+        return;
+      }
+
+      await createSet(setName);
+
+      window.location.reload();
+    } catch (error) {
+      setError(String(error));
     }
-
-    if (inv.some((s) => s.name === setName)) {
-      setError(`SET ${setName} already exists.`);
-      return;
-    }
-
-    await createSet(setName);
-
-    window.location.reload();
   }
 
   return (
@@ -100,7 +104,7 @@ export function SetStockModal({
   close,
 }: {
   data: {
-    item: string;
+    item: InventoryItem | null;
     set: string;
     visible: boolean;
   };
@@ -118,6 +122,11 @@ export function SetStockModal({
       return;
     }
 
+    if (!item) {
+      setError("Failed to load item?");
+      return;
+    }
+
     await overwriteStock({
       item,
       set,
@@ -128,7 +137,7 @@ export function SetStockModal({
     window.location.reload();
   }
 
-  if (!validate(item))
+  if (!isValidItem(item))
     return (
       <ValidationErrorModal
         visible={visible}
@@ -163,7 +172,7 @@ export function SetStockModal({
             <NumberInput
               label={
                 <label>
-                  Update stock for <code>{item}</code>
+                  Update stock for <code>{item.name}</code>
                 </label>
               }
               id="stock"
@@ -187,8 +196,12 @@ export function SetStockModal({
           </Form>
         </ModalBody>
         <ModalFooter>
-          <Button onPress={handler}>
-            Update <code>{item}</code>'s stock
+          <Button
+            onPress={async () => {
+              await handler();
+            }}
+          >
+            Update <code>{item.name}</code>'s stock
           </Button>
         </ModalFooter>
       </ModalContent>
@@ -203,7 +216,7 @@ export function DeleteModal({
 }: {
   type: "item" | "set";
   data: {
-    item: string;
+    item: InventoryItem | null;
     set: string;
     visible: boolean;
   };
@@ -211,28 +224,32 @@ export function DeleteModal({
 }) {
   const { item, set, visible } = data;
 
-  const deletable = type === "item" ? item : set;
-
   const [error, setError] = useState<string | null>(null);
   const [itemName, setItemName] = useState<string>("");
 
+  const deletableName: string = type === "item" ? (item?.name ?? "") : set;
+
   async function handler() {
-    if (itemName !== deletable) {
+    if (itemName !== deletableName) {
       setError(`The ${type.toUpperCase()}'s name isn't correct...`);
       return;
     }
 
-    if (type === "item")
+    if (type === "item") {
+      if (!item) {
+        setError("Couldn't load item");
+        return;
+      }
       await deleteItem({
         item,
         set,
       });
-    else await deleteSet(set);
+    } else await deleteSet(set);
 
     window.location.reload();
   }
 
-  if (type === "item" && !validate(item))
+  if (type === "item" && !isValidItem(item))
     return (
       <ValidationErrorModal
         visible={visible}
@@ -262,7 +279,7 @@ export function DeleteModal({
               Please, double check you want to{" "}
               <b>
                 delete {type.toUpperCase()}{" "}
-                <code className="bg-yellow-300">{deletable}</code>
+                <code className="bg-yellow-300">{deletableName}</code>
                 {type === "item" ? (
                   <>
                     {" "}
@@ -288,17 +305,21 @@ export function DeleteModal({
               }}
             />
             <p className="text-sm text-default-700 mt-2">
-              This {type}'s name is <code>{item}</code>. We ask you to write it
-              to prevent a mistaken click from becoming a larger mistake.
+              This {type}'s name is <code>{deletableName}</code>
+              {type === "item" ? ` and its ID is ${item?.id}.` : ""}. We ask you
+              to write it to prevent a mistaken click from becoming a larger
+              mistake.
             </p>
           </Form>
         </ModalBody>
         <ModalFooter>
           <Button
-            color={itemName === deletable ? "danger" : "default"}
-            onPress={handler}
+            color={itemName === deletableName ? "danger" : "default"}
+            onPress={async () => {
+              await handler();
+            }}
           >
-            Delete <code>{deletable}</code>
+            Delete <code>{deletableName}</code>
           </Button>
         </ModalFooter>
       </ModalContent>

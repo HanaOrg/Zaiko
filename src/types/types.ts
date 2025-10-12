@@ -6,14 +6,16 @@ export interface Settings {
   /** App theme. */
   theme: "dark" | "light";
   /** Zaiko allows customizing the app name. */
-  appName: string;
+  app_name: string;
   /** Threshold for showing stock warning. */
-  warnThreshold: number;
+  warn_threshold: number;
   /** Threshold for showing stock critical warning. */
-  criticalThreshold: number;
+  critical_threshold: number;
 }
 
 export interface InventoryItem {
+  /** Item's UUIDv7 */
+  id: string;
   /** Unique and required. */
   name: string;
   /** Non required. */
@@ -26,14 +28,8 @@ export interface InventoryItem {
   zaikode: string | undefined;
 }
 
-export interface InventorySet {
-  /** Unique and required. */
-  name: string;
-  items: InventoryItem[];
-}
-
 /** Zaiko Inventory */
-export type Inventory = InventorySet[];
+export type Inventory = Record<string, { id: string; items: InventoryItem[] }>;
 
 export function isValidItem(item: any): item is InventoryItem {
   if (!item || typeof item !== "object") return false;
@@ -50,16 +46,11 @@ export function isValidItem(item: any): item is InventoryItem {
   return true;
 }
 
-export function isValidSet(set: any): set is InventorySet {
-  if (!set || typeof set !== "object") return false;
-  if (!validate(set.name)) return false;
-  if (!set.items) return false;
-  if (!set.items.every(isValidItem)) return false;
-  return true;
-}
-
 export function isValidInventory(inv: any): inv is Inventory {
-  if (!inv || !Array.isArray(inv)) return false;
-  if (!inv.every(isValidSet)) return false;
+  if (!inv || typeof inv !== "object") return false;
+  const keys = Object.keys(inv);
+  const vals = Object.values(inv);
+  if (!keys.every((key) => validate(key))) return false;
+  if (!vals.every(isValidItem)) return false;
   return true;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Inventory, InventoryItem, InventorySet } from "../types/types";
+import { Inventory, InventoryItem } from "../types/types";
 import { validate } from "@zakahacecosas/string-utils";
 import {
   Form,
@@ -19,7 +19,7 @@ import Wrapper from "../components/Wrapper";
 
 export default function CreateItem() {
   const navigate = useNavigate();
-  const [inv, setInv] = useState<Inventory>([]);
+  const [inv, setInv] = useState<Inventory>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [itemName, setItemName] = useState<string>("");
   const [itemParent, setItemParent] = useState<string>("");
@@ -31,7 +31,7 @@ export default function CreateItem() {
   const [zaikoBarcode, setZaikoBarcode] = useState<string>("");
   const [edit, setEdit] = useState<null | {
     item: InventoryItem;
-    set: InventorySet;
+    set: string;
   }>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,8 +60,8 @@ export default function CreateItem() {
   useEffect(() => {
     setZaikoBarcode(
       `ZAIKO-ITEM-${
-        (inv
-          .map((s) => s.items)
+        (Object.values(inv)
+          .map((o) => o.items)
           .flat()
           .map((i) => i.zaikode)
           .filter((i) => i !== undefined)
@@ -108,7 +108,7 @@ export default function CreateItem() {
 
     if (
       edit === null &&
-      inv
+      Object.values(inv)
         .map((s) => s.items.map((i) => i.name))
         .flat(Infinity)
         .some((n) => n === itemName)
@@ -118,6 +118,7 @@ export default function CreateItem() {
     }
 
     const itemToCreate: InventoryItem = {
+      id: "",
       name: itemName,
       description: validate(itemDescription)
         ? itemDescription
@@ -142,7 +143,7 @@ export default function CreateItem() {
     try {
       await createItem(
         itemToCreate,
-        edit !== null ? edit.set.name : itemParent,
+        edit !== null ? edit.set : itemParent,
         edit,
       );
     } catch (e) {
@@ -167,7 +168,7 @@ export default function CreateItem() {
       {edit && (
         <Alert className="mb-4" color="primary">
           <p>
-            Editing <b>{edit.item.name}</b> on SET <b>{edit.set.name}</b>
+            Editing <b>{edit.item.name}</b> on SET <b>{edit.set}</b>
           </p>
         </Alert>
       )}
@@ -179,15 +180,15 @@ export default function CreateItem() {
           <div className="w-full">
             <Select
               isDisabled={edit !== null}
-              defaultSelectedKeys={edit === null ? [] : [edit.set.name]}
+              defaultSelectedKeys={edit === null ? [] : [edit.set]}
               label={<label>Where to store the ITEM?</label>}
               aria-label="Select SET"
               placeholder="SET where you'll store the ITEM"
               value={itemParent}
               onChange={(e) => setItemParent(e.target.value)}
             >
-              {inv.map((s) => (
-                <SelectItem key={fmtName(s.name)}>{s.name}</SelectItem>
+              {Object.keys(inv).map((s) => (
+                <SelectItem key={fmtName(s)}>{s}</SelectItem>
               ))}
             </Select>
             <p className="text-sm text-default-700 mt-2">
