@@ -37,7 +37,16 @@ export function AboutModal({
               @ZakaHaceCosas
             </a>
             .<br />
-            Published by the Hana org.
+            Published by{" "}
+            <a
+              className="text-lg text-primary"
+              href="https://hana-org.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              the Hana org
+            </a>
+            .
           </p>
           <Divider className="my-2" />
           <p>

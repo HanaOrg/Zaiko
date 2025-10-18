@@ -7,7 +7,7 @@ import Home from "./pages/Home";
 import SettingsPage from "./pages/Settings";
 import Guide from "./pages/Guide";
 import NotFound from "./pages/Lost";
-import CreateItem from "./pages/Item";
+import CreateItem from "./pages/Create-Item";
 import { HeroUIProvider } from "@heroui/react";
 import { ToastProvider } from "@heroui/toast";
 

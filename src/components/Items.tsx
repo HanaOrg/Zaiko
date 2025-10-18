@@ -103,7 +103,7 @@ function ListedItem({
           )}
         </p>
         <div className="mt-1">
-          <ButtonGroup className="me-2">
+          <ButtonGroup className="me-2 rounded-xl overflow-hidden">
             <Button
               color="primary"
               onPress={() =>
@@ -166,7 +166,7 @@ function ListedItem({
             </Button>
           </ButtonGroup>
           {(item.barcode || item.zaikode) && (
-            <ButtonGroup>
+            <ButtonGroup className="rounded-xl overflow-hidden">
               {item.barcode && (
                 <Button
                   color="default"

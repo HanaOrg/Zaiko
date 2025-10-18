@@ -180,14 +180,14 @@ export async function createItem(
 
   await setUserData(1, {
     set_id: inv[set].id,
-    item: [...inv[set].items, item],
+    item: [item],
   });
 }
 
 export async function refreshZaiko() {
   const db = await setupDB();
-  await db.execute("DELETE * FROM inv_sets");
-  await db.execute("DELETE * FROM inv_items");
+  await db.execute("DELETE FROM inv_items");
+  await db.execute("DELETE FROM inv_sets");
   await setUserData(0, DEFAULT_PREFERENCES);
   return;
 }

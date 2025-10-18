@@ -159,7 +159,7 @@ export default function SettingsPage() {
         CSV isn't really recommended, however if you feel like you need it, we
         made sure it works fine.
       </p>
-      <ButtonGroup className="mr-auto mt-2">
+      <ButtonGroup className="rounded-xl overflow-hidden mr-auto mt-2">
         <Button
           color={
             document.body.dataset["bsTheme"] === "light" ? "primary" : "default"
@@ -257,29 +257,29 @@ export default function SettingsPage() {
         Import a JSON export file to bring in your data. This file must comply
         with the Zaiko JSON specification.
       </p>
-      <ButtonGroup className="mr-auto mt-2">
-        <Button
-          color={
-            document.body.dataset["bsTheme"] === "light" ? "primary" : "default"
-          }
-          variant="flat"
-          onPress={async () => {
-            await importData();
-          }}
-        >
-          Import JSON file
-        </Button>
-      </ButtonGroup>
+      <Button
+        className="mt-2 mr-auto"
+        color={
+          document.body.dataset["bsTheme"] === "light" ? "primary" : "default"
+        }
+        variant="flat"
+        onPress={async () => {
+          await importData();
+        }}
+      >
+        Import JSON file
+      </Button>
       <Divider className="my-4" />
       <h3 className="text-lg">Danger zone</h3>
       <p>Refreshing the app cannot be undone. Be certain.</p>
-      <ButtonGroup className="mt-2 mr-auto">
-        <Button color="danger" onPress={() => setRefreshModalVisible(true)}>
-          Refresh {appName}
-        </Button>
-      </ButtonGroup>
+      <Button
+        color="danger"
+        className="mt-2 mr-auto"
+        onPress={() => setRefreshModalVisible(true)}
+      >
+        Refresh {appName}
+      </Button>
       <Footer />
-
       <Modal
         isOpen={refreshModalVisible}
         onOpenChange={() => setRefreshModalVisible(false)}
