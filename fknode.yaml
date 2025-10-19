@@ -11,11 +11,13 @@ flagless:
   flaglessPretty: true
 buildCmd:
   - $tauri build
+  - ~mkdir -p build
   - ~cp manifest.yaml build/manifest.yaml
   - ~cp src-tauri/icons/icon.ico build/zaiko.ico
-  - ~powershell cp src-tauri/target/release/zaiko.exe build/zaiko.exe
-  - ~powershell cp src-tauri/target/release/zaiko.exe build/zaiko.exe
-  - <kbi konpak build --platform=windows --id=zaiko --binary=zaiko.exe --icon=zaiko.ico --ver=0.1.0 --sfx
+  - msft: ~powershell cp src-tauri/target/release/zaiko.exe build/zaiko.exe
+    posix: ~cp src-tauri/target/release/zaiko build/zaiko
+  - msft: <kbi konpak build --platform=windows --id=zaiko --binary=zaiko.exe --icon=zaiko.ico --ver=0.1.0 --sfx
+    posix: <sudo kbi konpak build --platform=windows --id=zaiko --binary=zaiko --icon=zaiko.ico --ver=0.1.0 --sfx
 updateCmdOverride: deps
 launchCmd:
   - $tauri dev

@@ -2,8 +2,8 @@ repository: "gh:HanaOrg/Zaiko"
 type: "gui"
 platforms:
   win64: "kbi:zaiko-[[VER]]-win64.kpak"
-  linux64: null
-  linuxArm: null
+  linux64: "kbi:zaiko-[[VER]]-linux.kpak"
+  linuxArm: "kbi:zaiko-[[VER]]-linux-arm.kpak"
   mac64: null
   macArm: null
 name: "Zaiko"
@@ -25,6 +25,7 @@ homepage: "https://hana-org.vercel.app/zaiko"
 requirements:
   os_ver:
     win: "Windows 7 SP1 or later"
+    lin: "Any libgtk-3 and libwebkit2gtk-4.1 compatible distribution"
   ram_mb: 512
   disk_mb: 30
 categories:

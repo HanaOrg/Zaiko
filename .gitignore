@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+zaiko.kpak
 build
 *.local
 
@@ -23,6 +24,3 @@ build
 *.njsproj
 *.sln
 *.sw?
-
-# Personal plans
-TODO.md

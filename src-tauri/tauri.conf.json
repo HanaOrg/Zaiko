@@ -39,7 +39,7 @@
     }
   },
   "bundle": {
-    "active": false,
+    "active": true,
     "windows": {
       "allowDowngrades": false,
       "certificateThumbprint": null,
@@ -67,10 +67,10 @@
       "icons/icon.ico"
     ],
     "copyright": "(c) Hana Org 2025",
-    "homepage": "https://github.com/HanaOrg",
+    "homepage": "https://github.com/HanaOrg/Zaiko",
     "license": "GPL-3.0-only",
     "publisher": "Hana Org",
-    "shortDescription": "Inventory made easy",
+    "shortDescription": "Inventory made easy.",
     "longDescription": "An app that allows for simple inventory stock management. You can update stock for all items from your homepage easily. View stock for all items, and warnings for items running out of stock. Export data to Excel, JSON, or CSV at any time.",
     "linux": {
       "appimage": {
@@ -79,7 +79,8 @@
       "deb": {
         "priority": "standard",
         "changelog": "../changelog.txt",
-        "section": "admin"
+        "section": "admin",
+        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"]
       }
     }
   }
