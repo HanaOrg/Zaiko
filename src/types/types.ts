@@ -34,7 +34,8 @@ export type Inventory = Record<string, { id: string; items: InventoryItem[] }>;
 export function isValidItem(item: any): item is InventoryItem {
   if (!item || typeof item !== "object") return false;
   if (!validate(item.name)) return false;
-  if (!item.stock || isNaN(item.stock)) return false;
+  if (typeof item.stock !== "number" || item.stock == null || isNaN(item.stock))
+    return false;
   if (item.description && typeof item.description !== "string") return false;
   if (item.barcode && validateBarcode(item.barcode).valid == false)
     return false;

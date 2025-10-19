@@ -211,7 +211,8 @@ export async function overwriteStock(params: {
   if (action === "increment") newStock = foundItem.stock + stock;
   if (action === "decrement") newStock = foundItem.stock - stock;
 
-  if (!newStock || isNaN(newStock)) throw `newStock not set or not number`;
+  if (newStock == null || isNaN(newStock))
+    throw `newStock not set or not number`;
 
   const db = await setupDB();
   await db.execute(
