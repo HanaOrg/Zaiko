@@ -30,9 +30,9 @@ export default function NavigationBar({ appName }: { appName: string }) {
             Settings
           </Link>
         </NavbarItem>
-        <NavbarItem isActive={getNavClassname(["/guide"])}>
-          <Link color="foreground" aria-current="page" href="/guide">
-            Guide
+        <NavbarItem isActive={getNavClassname(["/help"])}>
+          <Link color="foreground" aria-current="page" href="/help">
+            Help
           </Link>
         </NavbarItem>
       </NavbarContent>

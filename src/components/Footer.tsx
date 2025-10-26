@@ -53,6 +53,8 @@ export function AboutModal({
             This program is free and open source software. You can redistribute
             it and/or modify it under the terms of the GNU General Public
             License, version 3.0.
+            <br />
+            <span className="text-sm">Powered by Tauri 2 and BunJS.</span>
           </p>
         </ModalBody>
         <ModalFooter />
@@ -82,7 +84,7 @@ export default function Footer() {
             onClick={() => setDisplay(true)}
             className="text-body-secondary"
           >
-            Powered by Tauri | Made by <b>Hana</b>
+            Made by <b>Hana</b>
           </span>
         </div>
       </footer>

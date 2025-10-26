@@ -8,16 +8,11 @@ import {
   Accordion,
   AccordionItem,
 } from "@heroui/react";
-import Footer from "../components/Footer";
 import Wrapper from "../components/Wrapper";
 
-export default function Guide() {
+export default function Help() {
   return (
-    <Wrapper
-      header="Guide"
-      subheader="Some helpful information"
-      loading={false}
-    >
+    <Wrapper header="Help" subheader="Some helpful information" loading={false}>
       <Accordion>
         <AccordionItem title="How do I export my inventory? How does it work?">
           <p>
@@ -73,7 +68,6 @@ export default function Guide() {
           </p>
         </AccordionItem>
       </Accordion>
-      <Footer />
     </Wrapper>
   );
 }

@@ -13,7 +13,6 @@ import {
 } from "@heroui/react";
 import { createItem, fmtName, getUserData } from "../api/data";
 import { validateBarcode } from "../api/barcode";
-import Footer from "../components/Footer";
 import { useNavigate } from "react-router";
 import Wrapper from "../components/Wrapper";
 
@@ -158,7 +157,7 @@ export default function CreateItem() {
     <Wrapper
       loading={loading}
       header="Create a new item"
-      subheader="You'll be able to track its stock and generate PNG barcodes."
+      subheader="You'll be able to track its stock and generate PNG bar codes."
     >
       {error && (
         <Alert className="mb-4" color="danger">
@@ -295,8 +294,6 @@ export default function CreateItem() {
           {edit === null ? "Create ITEM" : "Edit ITEM"}
         </Button>
       </Form>
-
-      <Footer />
     </Wrapper>
   );
 }

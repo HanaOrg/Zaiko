@@ -1,4 +1,3 @@
-import Footer from "../components/Footer";
 import {
   DEFAULT_PREFERENCES,
   exportData,
@@ -279,7 +278,6 @@ export default function SettingsPage() {
       >
         Refresh {appName}
       </Button>
-      <Footer />
       <Modal
         isOpen={refreshModalVisible}
         onOpenChange={() => setRefreshModalVisible(false)}

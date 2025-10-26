@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Inventory, InventoryItem, Settings } from "../types/types";
 import { getUserData, fmtName, DEFAULT_PREFERENCES } from "../api/data";
 import { Button, Alert } from "@heroui/react";
-import Footer from "../components/Footer";
 import {
   CreateSetModal,
   DeleteModal,
@@ -137,9 +136,6 @@ export default function Home() {
           )}
         </div>
       </div>
-
-      <Footer />
-
       <CreateSetModal
         display={newSetModal}
         close={() => setSetModal(false)}

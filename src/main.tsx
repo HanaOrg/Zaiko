@@ -5,7 +5,7 @@ import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import Home from "./pages/Home";
 import SettingsPage from "./pages/Settings";
-import Guide from "./pages/Guide";
+import Help from "./pages/Help";
 import NotFound from "./pages/Lost";
 import CreateItem from "./pages/Create-Item";
 import { HeroUIProvider } from "@heroui/react";
@@ -25,8 +25,8 @@ const router = createBrowserRouter([
     element: <SettingsPage />,
   },
   {
-    path: "/guide",
-    element: <Guide />,
+    path: "/help",
+    element: <Help />,
   },
   {
     path: "/create-item",

@@ -21,3 +21,5 @@ buildCmd:
 updateCmdOverride: deps
 launchCmd:
   - $tauri dev
+commitCmd:
+  - <bun prettier --w .
