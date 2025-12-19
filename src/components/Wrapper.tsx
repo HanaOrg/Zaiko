@@ -1,4 +1,3 @@
-import Footer from "../components/Footer";
 import { Alert, Spinner } from "@heroui/react";
 import { ReactNode, useEffect, useState } from "react";
 import { getUserData } from "../api/data";
@@ -53,7 +52,6 @@ export default function Wrapper({
         <h1 className="text-3xl">{header}</h1>
         <p className="text-1xl mb-2">{subheader}</p>
         {children}
-        <Footer />
       </div>
     </>
   );

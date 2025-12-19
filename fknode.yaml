@@ -1,8 +1,7 @@
 destroy:
   intensities: "*"
   targets:
-    - "dist/"
-    - "build/"
+    - "src-tauri/target"
 commitActions: false
 flagless:
   flaglessUpdate: true
@@ -10,7 +9,7 @@ flagless:
   flaglessLint: true
   flaglessPretty: true
 buildCmd:
-  - $tauri build
+  - $;;tauri build
   - ~mkdir -p build
   - ~cp manifest.yaml build/manifest.yaml
   - ~cp src-tauri/icons/icon.ico build/zaiko.ico
@@ -20,6 +19,6 @@ buildCmd:
     posix: <sudo kbi konpak build --platform=windows --id=zaiko --binary=zaiko --icon=zaiko.ico --ver=0.1.0 --sfx
 updateCmdOverride: deps
 launchCmd:
-  - $tauri dev
+  - $;;tauri dev
 commitCmd:
   - <bun prettier --w .

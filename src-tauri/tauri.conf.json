@@ -75,12 +75,6 @@
     "linux": {
       "appimage": {
         "bundleMediaFramework": false
-      },
-      "deb": {
-        "priority": "standard",
-        "changelog": "../changelog.txt",
-        "section": "admin",
-        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"]
       }
     }
   }
